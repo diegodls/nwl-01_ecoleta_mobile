@@ -28,20 +28,21 @@ interface Item {
 interface Point {
     id: number,
     image: string,
+    image_url: string,
     name: string,
     latitude: number,
     longitude: number,
 }
 
-interface Params{
-    uf: string,
-    city: string
+interface Params {
+    selectedUf: string,
+    selectedCity: string
 }
 
 
 const Points = () => {
     const navigation = useNavigation();
-    const route = useRoute();   
+    const route = useRoute();
 
     const [items, setItems] = useState<Item[]>([]);
     const [points, setPoints] = useState<Point[]>([]);
@@ -50,9 +51,10 @@ const Points = () => {
 
     const routeParams = route.params as Params;
 
-    useEffect(() => { //get Current Position
-        async function loadPosition() {
+    useEffect(() => { //pegar a posição atual
+        let isMounted = true;//necessário para verificar se o componente foi montado, se não vai tentar alterar o estad ode um componente não montado
 
+        async function loadPosition() {
             RNLocation.configure({
                 distanceFilter: 5.0
             });
@@ -65,7 +67,7 @@ const Points = () => {
             }).then(granted => {
                 if (granted) {
                     RNLocation.subscribeToLocationUpdates(locations => {
-                        setInitialPosition([locations[0].latitude, locations[0].longitude]);
+                        if (isMounted) { setInitialPosition([locations[0].latitude, locations[0].longitude]); }
                     });
                 }
                 else {
@@ -75,24 +77,30 @@ const Points = () => {
             });
         };
         loadPosition();
+        return (() => { isMounted = false; });
     }, [])
 
     useEffect(() => { //get Items from api
+        let isMounted = true;
         api.get('items').then(response => {
-            setItems(response.data);
+            if (isMounted) { setItems(response.data); }
         })
+        return (() => { isMounted = false; });
     }, [])
 
     useEffect(() => {
+        let isMounted = true;
+
         api.get('points', {
             params: {
-                city: routeParams.city,
-                uf: routeParams.uf,
+                city: routeParams.selectedCity,
+                uf: routeParams.selectedUf,
                 items: selectedItems
             }
         }).then(response => {
-            setPoints(response.data);
-        })
+            if (isMounted) { setPoints(response.data); }
+        });
+        return (() => { isMounted = false; });
     }, [selectedItems]);
 
     function handlerNavigateBack() {
@@ -136,6 +144,13 @@ const Points = () => {
                             latitudeDelta: 0.014,
                             longitudeDelta: 0.014
                         }}>
+                        <Marker
+                            style={{ zIndex: 100 }}
+                            coordinate={{
+                                latitude: initialPosition[0],
+                                longitude: initialPosition[1],
+                            }}
+                        />
                         {points.map(point => (
                             <Marker
                                 key={String(point.id)}
@@ -149,9 +164,17 @@ const Points = () => {
                                 <View style={styles.mapMarkerContainer}>
                                     <Image
                                         style={styles.mapMarkerImage}
-                                        source={{ uri: point.image }} />
-                                    <Text style={styles.mapMarkerTitle}>{point.name}</Text>
+                                        source={{ uri: point.image_url }} />
+                                    <Text
+                                        numberOfLines={1}
+                                        style={styles.mapMarkerTitle}>
+                                        {point.name.length < 10 ?
+                                            `${point.name}`
+                                            :
+                                            `${point.name.substring(0, 10)}...`
+                                        }</Text>
                                 </View>
+                                <View style={styles.mapMarkerDot} />
                             </Marker>
                         ))}
                     </MapView>
@@ -241,6 +264,15 @@ const styles = StyleSheet.create({
         color: '#FFF',
         fontSize: 13,
         lineHeight: 23,
+    },
+
+    mapMarkerDot: {
+        bottom: 5,
+        alignSelf:'center',
+        width: 10,
+        height: 10,
+        backgroundColor: '#34CB79',
+        transform: [{ rotate: '45deg' }]
     },
 
     itemsContainer: {

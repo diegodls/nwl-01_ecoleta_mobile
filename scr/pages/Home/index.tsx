@@ -7,15 +7,15 @@ import {
     ImageBackground,
     StatusBar,
     KeyboardAvoidingView,
-    Platform
+    Platform,
+    Alert
 } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native'
-import { RectButton, TextInput } from 'react-native-gesture-handler';
+import { RectButton } from 'react-native-gesture-handler';
 import IconFeather from 'react-native-vector-icons/Feather';
 import axios from 'axios';
-import RNPickerSelect from 'react-native-picker-select';
-import {Picker} from '@react-native-community/picker';
+import { Picker } from '@react-native-community/picker';
 
 interface IBGEUFResponse {
     sigla: string;
@@ -48,16 +48,18 @@ const Home = () => {
         }
         axios.get<IBGECityResponse[]>(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedUf}/municipios`).then(response => {
             const cityNames = response.data.map(city => city.nome);
-            setCities(cityNames);
+            setCities(cityNames.sort());
         });
 
     }, [selectedUf]);
 
     function handlerNavigateToPoints() {
-        console.log(ufs, cities);
-        
-
-        //navigation.navigate('Points', { selectedUf, selectedCity });
+        if (selectedUf === '0' || selectedCity === '0') {
+            Alert.alert('Ops!', 'Primeiro selecione o estado e a cidade para prosseguir!')            
+        } else {
+           
+            navigation.navigate('Points', { selectedUf, selectedCity });
+        }
     }
 
     return (
@@ -72,33 +74,39 @@ const Home = () => {
                         <Text style={styles.title}>Seu marketplace de coleta de resíduos</Text>
                         <Text style={styles.description}>Ajudamos pessoas a encontrarem pontos e coleta de forma eficiênte.</Text>
                     </View>
-                    <View style={styles.footer}>
-                        {/* <Picker/> */}
+                    <View >
+                        <View style={styles.picker}>
+                            <Picker
+                                selectedValue={selectedUf}
+                                onValueChange={(value, index) =>
+                                    setSelectedUf(String(value))
+                                }>
+                                <Picker.Item
+                                    key={'0'}
+                                    label={'Selecione o estado'}
+                                    value={'0'} />
+                                {ufs.sort().map(uf => (
 
-                        {/* <RNPickerSelect
-                            placeholder={'Selecione o estado...'}
-                            onValueChange={(value) => { console.log(value) }}
-                            items={[
-                                { label: 'teste', value: 'teste' },
-                                { label: 'teste1', value: 'teste1' },
-                                { label: 'teste2', value: 'teste2' },
-                                { label: 'teste3', value: 'teste3' },
-                            ]}
-                        /> */}
-                        {/* <TextInput
-                            style={styles.textInput}
-                            placeholder={'Digite a UF'}
-                            value={uf}
-                            maxLength={2}
-                            autoCapitalize={'characters'}
-                            autoCorrect={false}
-                            onChangeText={setUf} />
-                        <TextInput
-                            style={styles.textInput}
-                            placeholder={'Digite a Cidade'}
-                            value={city}
-                            autoCorrect={false}
-                            onChangeText={setCity} /> */}
+                                    <Picker.Item key={String(uf)} label={uf} value={uf} />
+                                ))}
+                            </Picker>
+                        </View>
+                        <View style={styles.picker}>
+                            <Picker
+                                enabled={selectedUf !== '0'}
+                                selectedValue={selectedCity}
+                                onValueChange={(value) =>
+                                    setSelectedCity(String(value))
+                                }>
+                                <Picker.Item
+                                    key={'0'}
+                                    label={'Selecione a cidade'}
+                                    value={'0'} />
+                                {cities.sort().map(uf => (
+                                    <Picker.Item key={String(uf)} label={uf} value={uf} />
+                                ))}
+                            </Picker>
+                        </View>
 
 
                     </View>
@@ -142,16 +150,13 @@ const styles = StyleSheet.create({
         lineHeight: 24,
 
     },
-    footer: {},
 
-    select: {},
-
-    textInput: {
+    picker: {
+        justifyContent: 'center',
         height: 60,
         backgroundColor: '#FFF',
-        borderRadius: 10,
+        borderRadius: 8,
         marginBottom: 8,
-        paddingHorizontal: 24,
         fontSize: 16,
     },
 

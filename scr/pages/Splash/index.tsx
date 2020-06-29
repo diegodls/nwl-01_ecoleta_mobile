@@ -16,7 +16,6 @@ import * as RNLocation from 'react-native-location';
 const Splash = () => {
 
     useEffect(() => {
-        //requestGeoPermission();
         requestLocationPermission();
     }, [])
 
@@ -42,27 +41,6 @@ const Splash = () => {
             }
         });
     }
-
-    // async function requestGeoPermission() {
-    //     try {
-    //         const granted = await PermissionsAndroid.request(
-    //             PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION, {
-    //             title: 'Localizar Posição',
-    //             message: 'Necessário para mostrar os pontos de coleta pertos de você.',
-    //             buttonNegative: "Sair",
-    //             buttonPositive: "Conceder"
-    //         }
-    //         );
-    //         if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-    //             navigation.navigate('Points');
-    //         } else {
-    //             BackHandler.exitApp();
-    //         }
-    //     } catch (error) {
-    //         console.warn(error);
-    //     }
-
-    // };
 
     return (
         <>
@@ -93,8 +71,6 @@ const Splash = () => {
 
 
 }
-
-//parei 01:33:00
 
 const styles = StyleSheet.create({
     main: {
