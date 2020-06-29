@@ -18,7 +18,7 @@ Para executar esse aplicativo, você deverá:
 
 # :hammer: Aplicativos
 Fazem parte deste projeto os seguintes aplicativos: </br>
-[Server](https://github.com/diegodls/nwl-01_ecoleta_server) - Desenvolvido utilizando Typescript.
+[Server](https://github.com/diegodls/nwl-01_ecoleta_server) - Desenvolvido utilizando Typescript.</br>
 [Web](https://github.com/diegodls/nwl-01_ecoleta_web) - Desenvolvido em ReactJS, utilizando Typescript.
 
 # :nut_and_bolt: Módulos
